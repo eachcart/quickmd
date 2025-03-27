@@ -4,7 +4,7 @@
 
 ## ✨ Possibilities
 
-- ✅ Checking file integrity with `.qmd'
+- ✅ Checking file integrity with `.qmd`
 - 🔐 Encrypting files with unique keys
 - 🛠 Create and edit `.qmd` files
 - 🧰 Built-in file manager
