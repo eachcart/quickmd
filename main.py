@@ -3,9 +3,6 @@ import os
 import hashlib
 import json
 from PyQt6 import QtWidgets, QtGui, QtCore
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from base64 import b64encode, b64decode
 
 class QuickMD(QtWidgets.QMainWindow):
     def __init__(self):
@@ -43,7 +40,7 @@ class QuickMD(QtWidgets.QMainWindow):
         edit_menu = self.menuBar().addMenu("Tools")
         edit_menu.addAction("Add file", self.add_file)
         edit_menu.addAction("Remove selected", self.remove_selected)
-        edit_menu.addAction("Edit selected path", self.edit_selected_path) 
+        edit_menu.addAction("Edit selected path", self.edit_selected_path)
         edit_menu.addAction("Update md5", self.update_md5)
 
         self.icons = {
@@ -52,19 +49,6 @@ class QuickMD(QtWidgets.QMainWindow):
             "warn": self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning)
         }
 
-    # ------------------------ AES ------------------------
-
-    def encrypt(self, data, key):
-        cipher = AES.new(key, AES.MODE_EAX)
-        ciphertext, tag = cipher.encrypt_and_digest(data)
-        return b64encode(cipher.nonce + tag + ciphertext)
-
-    def decrypt(self, enc_data, key):
-        data = b64decode(enc_data)
-        nonce, tag, ciphertext = data[:16], data[16:32], data[32:]
-        cipher = AES.new(key, AES.MODE_EAX, nonce)
-        return cipher.decrypt_and_verify(ciphertext, tag)
-
     # ------------------------ Check ------------------------
 
     def check_qmd(self):
@@ -72,21 +56,11 @@ class QuickMD(QtWidgets.QMainWindow):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open .qmd", "", "QMD Files (*.qmd)")
         if not path:
             return
-        password, ok = QtWidgets.QInputDialog.getText(self, "Verification Key", "Enter verification key:")
-        if not ok:
-            return
         try:
-            with open("keys.json", "r") as f:
-                keys = json.load(f)
-            file_key = keys.get(os.path.basename(path), {}).get("verify_key")
-            if file_key != password:
-                raise Exception("Invalid verification key!")
-            with open(path, "rb") as f:
-                enc = f.read()
-                data = self.decrypt(enc, b64decode(keys[os.path.basename(path)]["decrypt_key"].encode()))
-                self.file_hashes = json.loads(data)
+            with open(path, "r") as f:
+                self.file_hashes = json.load(f)
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to verify .qmd: {e}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to open .qmd: {e}")
             return
         self.list_widget.clear()
         for filepath, md5 in self.file_hashes.items():
@@ -104,7 +78,7 @@ class QuickMD(QtWidgets.QMainWindow):
 
     def create_qmd(self):
         self.mode = "create"
-        files, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select files or folder", "")
+        files, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select files", "")
         if not files:
             return
         self.file_hashes = {}
@@ -122,40 +96,29 @@ class QuickMD(QtWidgets.QMainWindow):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open .qmd", "", "QMD Files (*.qmd)")
         if not path:
             return
-        password, ok = QtWidgets.QInputDialog.getText(self, "Decryption Key", "Enter FULL decryption key:")
-        if not ok:
-            return
         try:
-            with open(path, "rb") as f:
-                enc = f.read()
-                data = self.decrypt(enc, b64decode(password.encode()))
-                self.file_hashes = json.loads(data)
+            with open(path, "r") as f:
+                self.file_hashes = json.load(f)
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to decrypt .qmd: {e}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to open .qmd: {e}")
             return
         self.list_widget.clear()
-        for filepath, md5 in self.file_hashes.items():
+        for filepath in self.file_hashes:
             item = QtWidgets.QListWidgetItem(filepath)
             self.list_widget.addItem(item)
         self.accept_btn.setVisible(True)
 
-    # ----------------------- Unpack -----------------------
-    # Beta Feature
+    # ------------------------ Unpack ------------------------
 
     def unpack_qmd(self):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open .qmd to Unpack", "", "QMD Files (*.qmd)")
         if not path:
             return
-        password, ok = QtWidgets.QInputDialog.getText(self, "Decryption Key", "Enter FULL decryption key:")
-        if not ok:
-            return
         try:
-            with open(path, "rb") as f:
-                enc = f.read()
-                data = self.decrypt(enc, b64decode(password.encode()))
-                file_hashes = json.loads(data)
+            with open(path, "r") as f:
+                file_hashes = json.load(f)
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to decrypt .qmd: {e}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to open .qmd: {e}")
             return
 
         try:
@@ -163,40 +126,23 @@ class QuickMD(QtWidgets.QMainWindow):
             with open(list_path, "w") as f:
                 for filepath, md5 in file_hashes.items():
                     f.write(f"{filepath}:{md5}\n")
-            QtWidgets.QMessageBox.information(self, "Unpack", f"Unpacked hashes to {os.path.splitext(path)[0] + ".qmdu"}")
+            QtWidgets.QMessageBox.information(self, "Unpack", f"Unpacked hashes to {list_path}")
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"Failed to unpack: {e}")
 
     # ------------------------ Save ------------------------
 
     def save_qmd(self):
-        key1 = get_random_bytes(32)
-        key2 = get_random_bytes(32)
-        data = json.dumps(self.file_hashes).encode()
-        enc = self.encrypt(data, key2)
         save_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save .qmd", "", "QMD Files (*.qmd)")
         if not save_path:
             return
-        with open(save_path, "wb") as f:
-            f.write(enc)
-        keys_file = "keys.json"
         try:
-            with open(keys_file, "r") as f:
-                keys = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            keys = {}
-
-        keys[os.path.basename(save_path)] = {
-            "verify_key": b64encode(key1).decode(),
-            "decrypt_key": b64encode(key2).decode()
-        }
-
-        with open(keys_file, "w") as f:
-            json.dump(keys, f, indent=4)
-
-        QtWidgets.QMessageBox.information(self, "Keys",
-            f"Verification Key:\n{b64encode(key1).decode()}\n\nFull Decryption Key:\n{b64encode(key2).decode()}")
-        self.accept_btn.setVisible(False)
+            with open(save_path, "w") as f:
+                json.dump(self.file_hashes, f, indent=4)
+            QtWidgets.QMessageBox.information(self, "Saved", "Successfully saved .qmd file.")
+            self.accept_btn.setVisible(False)
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to save .qmd: {e}")
 
     # ------------------------ Tools ------------------------
 
@@ -221,7 +167,6 @@ class QuickMD(QtWidgets.QMainWindow):
             self.file_hashes.pop(filepath, None)
             self.list_widget.takeItem(self.list_widget.row(item))
 
-    # Also beta feature
     def edit_selected_path(self):
         if self.mode not in ("create", "edit"):
             QtWidgets.QMessageBox.warning(self, "Warning", "This function is only available in Create and Edit modes.")
@@ -232,27 +177,26 @@ class QuickMD(QtWidgets.QMainWindow):
             new_path, ok = QtWidgets.QInputDialog.getText(self, "Edit Path", "Enter new file path:", text=old_path)
             if ok and new_path:
                 if old_path in self.file_hashes:
-                    self.file_hashes.pop(old_path)
-                    self.file_hashes[new_path] = self.md5(new_path) if os.path.exists(new_path) else ""
+                    self.file_hashes[new_path] = self.file_hashes.pop(old_path)
                     item.setText(new_path)
-    
+
     def update_md5(self):
         if self.mode not in ("create", "edit"):
             QtWidgets.QMessageBox.warning(self, "Warning", "This function is only available in Create and Edit modes.")
             return
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
-            filepath = item.text()
-            if os.path.exists(filepath):
-                self.file_hashes[filepath] = self.md5(filepath)
-        QtWidgets.QMessageBox.information(self, "MD5 Updated", "MD5 hashes has successfully updated.")
+            path = item.text()
+            if os.path.exists(path):
+                self.file_hashes[path] = self.md5(path)
+        QtWidgets.QMessageBox.information(self, "Update", "MD5 hashes updated.")
 
     # ------------------------ Utils ------------------------
 
-    def md5(self, filepath):
+    def md5(self, path):
         h = hashlib.md5()
-        with open(filepath, "rb") as f:
-            while chunk := f.read(4096):
+        with open(path, "rb") as f:
+            while chunk := f.read(8192):
                 h.update(chunk)
         return h.hexdigest()
 
