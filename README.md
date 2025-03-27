@@ -21,7 +21,7 @@ pip install -r quickmd.pyreq
 python3 main.py
 ```
 
-## 📦 Building & Run on Windows
+## 📦 Building & Run on Windows (Build only on Windows!)
 ```bash
 git clone https://github.com/eachcart/quickmd.git
 cd quickmd 
