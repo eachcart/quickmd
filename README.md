@@ -24,7 +24,8 @@ python3 main.py
 ## 📦 Building & Run on Windows (Build only on Windows!)
 ```bash
 git clone https://github.com/eachcart/quickmd.git
-cd quickmd 
+cd quickmd
+pip install -r quickmd.pyreq
 pyinstaller --onefile --noconsole --icon=icon.ico main.py
 ```
 or just download the assembled image of the program in the release.
