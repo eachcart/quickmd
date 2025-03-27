@@ -1,2 +1,28 @@
-# quickmd
-A program to create and check special .qmd files with hashes of required files through an interface written in PyQt6.
+# QuickMD
+
+> A simple and easy-to-use utility to create, verify and edit protected `.qmd` files using AES encryption.
+
+## ✨ Possibilities
+
+- ✅ Checking file integrity with `.qmd'
+- 🔐 Encrypting files with unique keys
+- 🛠 Create and edit `.qmd` files
+- 🧰 Built-in file manager
+- 📜 Uses AES (EAX) for strong data protection
+- 🗝 Two key generation:
+    - **Verification Key** for verification
+    - **Full Decryption Key** - for decryption.
+
+## 📦 Installation for Linux
+```bash
+git clone https://github.com/eachcart/quickmd.git
+pip install -r quickmd.pyreq
+python3 main.py
+```
+
+## 📦 Building for Windows
+```bash
+git clone https://github.com/eachcart/quickmd.git
+pyinstaller --onefile --noconsole --icon=icon.ico main.py
+```
+or just download the assembled image of the program in the release, or the portable version.
