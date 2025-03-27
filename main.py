@@ -38,6 +38,7 @@ class QuickMD(QtWidgets.QMainWindow):
         menu.addSeparator()
         menu.addAction("Create .qmd", self.create_qmd)
         menu.addAction("Edit .qmd", self.edit_qmd)
+        menu.addAction("Unpack .qmd", self.unpack_qmd)
 
         edit_menu = self.menuBar().addMenu("Tools")
         edit_menu.addAction("Add file", self.add_file)
@@ -136,6 +137,34 @@ class QuickMD(QtWidgets.QMainWindow):
             item = QtWidgets.QListWidgetItem(filepath)
             self.list_widget.addItem(item)
         self.accept_btn.setVisible(True)
+
+    # ----------------------- Unpack -----------------------
+    # Beta Feature
+
+    def unpack_qmd(self):
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open .qmd to Unpack", "", "QMD Files (*.qmd)")
+        if not path:
+            return
+        password, ok = QtWidgets.QInputDialog.getText(self, "Decryption Key", "Enter FULL decryption key:")
+        if not ok:
+            return
+        try:
+            with open(path, "rb") as f:
+                enc = f.read()
+                data = self.decrypt(enc, b64decode(password.encode()))
+                file_hashes = json.loads(data)
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to decrypt .qmd: {e}")
+            return
+
+        try:
+            list_path = os.path.splitext(path)[0] + ".qmdu"
+            with open(list_path, "w") as f:
+                for filepath, md5 in file_hashes.items():
+                    f.write(f"{filepath}:{md5}\n")
+            QtWidgets.QMessageBox.information(self, "Unpack", f"Unpacked hashes to {os.path.splitext(path)[0] + ".qmdu"}")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to unpack: {e}")
 
     # ------------------------ Save ------------------------
 
