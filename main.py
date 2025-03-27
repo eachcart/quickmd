@@ -43,6 +43,7 @@ class QuickMD(QtWidgets.QMainWindow):
         edit_menu = self.menuBar().addMenu("Tools")
         edit_menu.addAction("Add file", self.add_file)
         edit_menu.addAction("Remove selected", self.remove_selected)
+        edit_menu.addAction("Edit selected path", self.edit_selected_path) 
         edit_menu.addAction("Update md5", self.update_md5)
 
         self.icons = {
@@ -220,6 +221,21 @@ class QuickMD(QtWidgets.QMainWindow):
             self.file_hashes.pop(filepath, None)
             self.list_widget.takeItem(self.list_widget.row(item))
 
+    # Also beta feature
+    def edit_selected_path(self):
+        if self.mode not in ("create", "edit"):
+            QtWidgets.QMessageBox.warning(self, "Warning", "This function is only available in Create and Edit modes.")
+            return
+        item = self.list_widget.currentItem()
+        if item:
+            old_path = item.text()
+            new_path, ok = QtWidgets.QInputDialog.getText(self, "Edit Path", "Enter new file path:", text=old_path)
+            if ok and new_path:
+                if old_path in self.file_hashes:
+                    self.file_hashes.pop(old_path)
+                    self.file_hashes[new_path] = self.md5(new_path) if os.path.exists(new_path) else ""
+                    item.setText(new_path)
+    
     def update_md5(self):
         if self.mode not in ("create", "edit"):
             QtWidgets.QMessageBox.warning(self, "Warning", "This function is only available in Create and Edit modes.")
