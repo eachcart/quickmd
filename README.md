@@ -13,7 +13,7 @@
     - **Verification Key** for verification
     - **Full Decryption Key** - for decryption.
 
-## 📦 Installation for Linux
+## 📦 Run on Linux
 ```bash
 git clone https://github.com/eachcart/quickmd.git
 cd quickmd
@@ -21,7 +21,7 @@ pip install -r quickmd.pyreq
 python3 main.py
 ```
 
-## 📦 Building for Windows
+## 📦 Building & Run on Windows
 ```bash
 git clone https://github.com/eachcart/quickmd.git
 cd quickmd 
