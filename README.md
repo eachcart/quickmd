@@ -16,6 +16,7 @@
 ## 📦 Installation for Linux
 ```bash
 git clone https://github.com/eachcart/quickmd.git
+cd quickmd
 pip install -r quickmd.pyreq
 python3 main.py
 ```
@@ -23,6 +24,7 @@ python3 main.py
 ## 📦 Building for Windows
 ```bash
 git clone https://github.com/eachcart/quickmd.git
+cd quickmd 
 pyinstaller --onefile --noconsole --icon=icon.ico main.py
 ```
 or just download the assembled image of the program in the release, or the portable version.
