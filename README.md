@@ -1,6 +1,6 @@
 # QuickMD
 
-> A simple and easy-to-use utility to create, verify and edit protected `.qmd` files.
+> A simple and easy-to-use utility to create, verify and edit `.qmd` files.
 
 ## ✨ Possibilities
 
