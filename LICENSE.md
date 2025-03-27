@@ -1,3 +1,5 @@
+> eachcart Possibilities License
+
 # RU
 Дата: 26.03.25 
 Автор: Daniil (eachcart)
