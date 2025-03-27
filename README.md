@@ -27,4 +27,4 @@ git clone https://github.com/eachcart/quickmd.git
 cd quickmd 
 pyinstaller --onefile --noconsole --icon=icon.ico main.py
 ```
-or just download the assembled image of the program in the release, or the portable version.
+or just download the assembled image of the program in the release.
