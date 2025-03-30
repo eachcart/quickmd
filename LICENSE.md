@@ -1,7 +1,6 @@
-> eachcart Possibilities License
+> eachcart Possibilities License (ePL)
 
 # RU
-Дата: 26.03.25 
 Автор: Daniil (eachcart)
 
 Разрешено:
@@ -24,7 +23,6 @@
 Telegram & Discord: @eachcart  
 
 # EN
-Date: 26.03.25  
 Author: Daniil (eachcart)  
 
 Allowed:  
